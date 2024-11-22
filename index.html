@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente de Tradução</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Assistente de Tradução</h1>
+
+        <!-- Menu Principal -->
+        <div class="menu">
+            <button class="menu-btn" id="btn-text-translation" aria-label="Abrir Tradução de Texto Livre">Tradução de Texto Livre</button>
+            <button class="menu-btn" id="btn-speech-translation" aria-label="Abrir Tradução por Reconhecimento de Fala">Tradução por Reconhecimento de Fala</button>
+            <button class="menu-btn" id="btn-camera-text" aria-label="Abrir Identificação Automática de Textos via Câmera">Identificação Automática de Textos via Câmera</button>
+            <button class="menu-btn" id="btn-image-text" aria-label="Abrir Identificação Automática de Textos via Imagem">Identificação Automática de Textos via Imagem</button>
+        </div>
+
+        <!-- Modal para Tradução de Texto Livre -->
+        <div id="modal-text-translation" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeModal('modal-text-translation')" aria-label="Fechar Modal">&times;</span>
+                <h2>Tradução de Texto Livre</h2>
+
+                <!-- Contêiner flexível para idiomas e botão de inversão -->
+                <div class="language-selection">
+                    <!-- Idioma de Entrada -->
+                    <div class="language-container">
+                        <label for="language-from-text">Idioma de Entrada:</label>
+                        <select id="language-from-text">
+                            <option value="pt">Português</option>
+                            <option value="en">Inglês</option>
+                            <option value="es">Espanhol</option>
+                            <option value="fr">Francês</option>
+                            <option value="de">Alemão</option>
+                            <option value="it">Italiano</option>
+                            <option value="zh">Chinês (Simplificado)</option>
+                            <option value="ja">Japonês</option>
+                            <option value="ko">Coreano</option>
+                            <option value="ru">Russo</option>
+                        </select>
+                    </div>
+
+                    <!-- Botão de Inversão de Idioma -->
+                    <button id="swap-languages-button" class="swap-button" aria-label="Inverter Idiomas">🔄</button>
+
+                    <!-- Idioma de Saída -->
+                    <div class="language-container">
+                        <label for="language-to-text">Idioma de Saída:</label>
+                        <select id="language-to-text">
+                            <option value="pt">Português</option>
+                            <option value="en">Inglês</option>
+                            <option value="es">Espanhol</option>
+                            <option value="fr">Francês</option>
+                            <option value="de">Alemão</option>
+                            <option value="it">Italiano</option>
+                            <option value="zh">Chinês (Simplificado)</option>
+                            <option value="ja">Japonês</option>
+                            <option value="ko">Coreano</option>
+                            <option value="ru">Russo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- TextArea para entrada de texto -->
+                <textarea id="text-input" rows="5" placeholder="Digite o texto aqui..." required></textarea>
+
+                <!-- Botão de Tradução -->
+                <button id="translate-text-button" class="btn">Traduzir Texto</button>
+
+                <!-- Contêiner para os ícones de Vassourinha e Megafone -->
+                <div class="icon-container">
+                    <!-- Ícone de Vassourinha -->
+                    <button id="clear-icon" class="icon-button disabled" onclick="clearText()" disabled>
+                        🧹
+                    </button>
+
+                    <!-- Ícone de Megafone -->
+                    <button id="speaker-icon" class="icon-button" onclick="toggleSpeak()">
+                        📢
+                    </button>
+                </div>
+
+                <p id="translation-output-text" class="translation-box"></p>
+            </div>
+        </div>
+
+        <!-- Modal para Tradução por Reconhecimento de Fala -->
+        <div id="modal-speech-translation" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeModal('modal-speech-translation')" aria-label="Fechar Modal">&times;</span>
+                <h2>Tradução por Reconhecimento de Fala</h2>
+
+                <label for="language-to-speech">Traduzir para:</label>
+                <select id="language-to-speech">
+                    <option value="pt">Português</option>
+                    <option value="en">Inglês</option>
+                    <option value="es">Espanhol</option>
+                    <option value="fr">Francês</option>
+                    <option value="de">Alemão</option>
+                    <option value="it">Italiano</option>
+                    <option value="zh">Chinês (Simplificado)</option>
+                    <option value="ja">Japonês</option>
+                    <option value="ko">Coreano</option>
+                    <option value="ru">Russo</option>
+                </select>
+
+                <button id="translate-voice-button" class="btn">
+                    <span id="voice-icon">🎤</span> Gravar
+                </button>
+                <p id="recording-status" class="recording" style="display: none;">Gravando...</p>
+                <p id="translation-output-speech" class="translation-box"></p>
+            </div>
+        </div>
+
+        <!-- Modal para OCR via Câmera -->
+        <div id="modal-camera-text" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeModal('modal-camera-text')" aria-label="Fechar Modal">&times;</span>
+                <h2>Identificação Automática de Textos via Câmera</h2>
+                <button id="btn-camera-ocr">Iniciar OCR da Câmera</button>
+                <div id="camera-container"></div>
+                <div id="image-text-output-camera" class="output-section" style="display: none;">
+                    <!-- A imagem capturada e os textos serão inseridos aqui -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para OCR via Imagem -->
+        <div id="modal-image-text" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeModal('modal-image-text')" aria-label="Fechar Modal">&times;</span>
+                <h2>Identificação Automática de Textos via Imagem</h2>
+                <button id="btn-select-image">Selecionar Imagem do Computador</button>
+                <div id="image-selection-container" style="display: none;">
+                    <!-- Contêiner flexível para idiomas e botão de inversão -->
+                    <div class="language-selection">
+                        <!-- Idioma de Saída -->
+                        <div class="language-container">
+                            <label for="language-to-image">Idioma de Saída:</label>
+                            <select id="language-to-image">
+                                <option value="pt">Português</option>
+                                <option value="en">Inglês</option>
+                                <option value="es">Espanhol</option>
+                                <option value="fr">Francês</option>
+                                <option value="de">Alemão</option>
+                                <option value="it">Italiano</option>
+                                <option value="zh">Chinês (Simplificado)</option>
+                                <option value="ja">Japonês</option>
+                                <option value="ko">Coreano</option>
+                                <option value="ru">Russo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Botão para iniciar OCR -->
+                    <button id="btn-start-ocr" class="btn">Iniciar OCR</button>
+
+                    <!-- Loader -->
+                    <div id="loader-image-text" class="loader" style="display: none;">Carregando...</div>
+
+                    <!-- Botão para exibir a imagem com bounding boxes -->
+                    <button id="btn-show-image" class="btn" style="display: none;">Exibir Imagem com Bounding Boxes</button>
+
+                    <!-- TextArea para exibir os textos identificados e suas traduções -->
+                    <textarea id="image-text-output" rows="10" readonly class="translation-box"></textarea>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
